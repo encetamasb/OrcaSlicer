@@ -1176,4 +1176,10 @@ wxString PrusaConnect::get_test_failed_msg(wxString& msg) const
 {
     return GUI::format_wxstr("%s: %s", _L("Could not connect to Prusa Connect"), msg);
 }
+
+Obico::Obico(DynamicPrintConfig* config)
+    : OctoPrint(config)
+{
+}
+
 }

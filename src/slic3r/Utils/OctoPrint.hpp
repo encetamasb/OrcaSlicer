@@ -133,6 +133,13 @@ protected:
     bool validate_version_text(const boost::optional<std::string>& version_text) const override;
 };
 
+class Obico : public OctoPrint
+{
+public:
+    Obico(DynamicPrintConfig *config);
+    ~Obico() override = default;
+};
+
 }
 
 #endif

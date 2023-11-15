@@ -427,7 +427,7 @@ void PhysicalPrinterDialog::update(bool printer_change)
             m_optgroup->show_field("printhost_apikey", true);
             for (const std::string& opt_key : std::vector<std::string>{ "printhost_user", "printhost_password" })
                 m_optgroup->hide_field(opt_key);
-            supports_multiple_printers = opt && opt->value == htRepetier;
+            supports_multiple_printers = opt && (opt->value == htRepetier || opt -> value == htObico);
             if (opt->value == htPrusaConnect) { // automatically show default prusaconnect address
                 if (Field* printhost_field = m_optgroup->get_field("print_host"); printhost_field) {
                     if (wxTextCtrl* temp = dynamic_cast<wxTextCtrl*>(printhost_field->getWindow()); temp && temp->GetValue().IsEmpty()) {
