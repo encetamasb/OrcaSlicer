@@ -31,6 +31,7 @@ class PhysicalPrinterDialog : public DPIDialog
 
     ScalableButton*     m_printhost_browse_btn              {nullptr};
     ScalableButton*     m_printhost_test_btn                {nullptr};
+    ScalableButton*     m_printhost_apikey_find_btn         {nullptr};
     ScalableButton*     m_printhost_cafile_browse_btn       {nullptr};
     ScalableButton*     m_printhost_client_cert_browse_btn  {nullptr};
     ScalableButton*     m_printhost_port_browse_btn         {nullptr};

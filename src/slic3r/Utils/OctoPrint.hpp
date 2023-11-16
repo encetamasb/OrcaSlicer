@@ -138,6 +138,15 @@ class Obico : public OctoPrint
 public:
     Obico(DynamicPrintConfig *config);
     ~Obico() override = default;
+
+    bool has_auto_discovery() const override { return false; }
+
+    wxString get_test_ok_msg() const override;
+    wxString get_test_failed_msg(wxString& msg) const override;
+    virtual PrintHostPostUploadActions get_post_upload_actions() const override;
+    virtual bool validate_version_text(const boost::optional<std::string>& version_text) const override;
+protected:
+    std::string m_printhost_apikey;
 };
 
 }

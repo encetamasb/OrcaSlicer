@@ -137,7 +137,7 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
         return sizer;
     };
 
-    auto printhost_browse = [=](wxWindow* parent) 
+    auto printhost_browse = [=](wxWindow* parent)
     {
         auto sizer = create_sizer_with_btn(parent, &m_printhost_browse_btn, "printer_host_browser", _L("Browse") + " " + dots);
         m_printhost_browse_btn->Bind(wxEVT_BUTTON, [=](wxCommandEvent& e) {
@@ -177,6 +177,32 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
         return sizer;
     };
 
+    auto printhost_apikey_find = [=](wxWindow* parent) {
+        auto sizer = create_sizer_with_btn(parent, &m_printhost_apikey_find_btn, "printer_host_browser", _L("Find API Key"));
+
+        m_printhost_apikey_find_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
+            std::unique_ptr<PrintHost> host(PrintHost::get_print_host(m_config));
+            if (!host) {
+                const wxString text = _L("Could not get a valid Printer Host reference");
+                show_error(this, text);
+                return;
+            }
+            wxString msg;
+            bool result;
+            {
+                // Show a wait cursor during the connection test, as it is blocking UI.
+                wxBusyCursor wait;
+                result = host->test(msg);
+            }
+            if (result) {
+                wxLaunchDefaultBrowser(host->get_host() + "/user_preferences/api-keys/", wxBROWSER_NEW_WINDOW); // FIXME
+            } else {
+                show_error(this, host->get_test_failed_msg(msg));
+            };
+        });
+        return sizer;
+    };
+
     auto print_host_printers = [this, create_sizer_with_btn](wxWindow* parent) {
         //add_scaled_button(parent, &m_printhost_port_browse_btn, "browse", _(L("Refresh Printers")), wxBU_LEFT | wxBU_EXACTFIT);
         auto sizer = create_sizer_with_btn(parent, &m_printhost_port_browse_btn, "monitor_signal_strong", _(L("Refresh Printers")));
@@ -202,8 +228,10 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
 
     option = m_optgroup->get_option("printhost_apikey");
     option.opt.width = Field::def_width_wider();
-    m_optgroup->append_single_option_line(option);
-
+    Line apikey_line = m_optgroup->create_single_option_line(option);
+    apikey_line.append_widget(printhost_apikey_find);
+    m_optgroup->append_line(apikey_line);
+    
     option = m_optgroup->get_option("printhost_port");
     option.opt.width = Field::def_width_wider();
     Line port_line = m_optgroup->create_single_option_line(option);
@@ -245,7 +273,7 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
         m_optgroup->append_line(cafile_hint);
     }
     else {
-        
+
         Line line{ "", "" };
         line.full_width = 1;
 
@@ -264,7 +292,7 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
         m_optgroup->append_line(line);
     }
 
-    for (const std::string& opt_key : std::vector<std::string>{ "printhost_user", "printhost_password" }) {        
+    for (const std::string& opt_key : std::vector<std::string>{ "printhost_user", "printhost_password" }) {
         option = m_optgroup->get_option(opt_key);
         option.opt.width = Field::def_width_wider();
         m_optgroup->append_single_option_line(option);
@@ -317,6 +345,7 @@ void PhysicalPrinterDialog::update_printhost_buttons()
     if (host) {
         m_printhost_test_btn->Enable(!m_config->opt_string("print_host").empty() && host->can_test());
         m_printhost_browse_btn->Enable(host->has_auto_discovery());
+        m_printhost_apikey_find_btn->Enable(!m_config->opt_string("print_host").empty());
     }
 }
 
@@ -405,6 +434,8 @@ void PhysicalPrinterDialog::update(bool printer_change)
     const PrinterTechnology tech = Preset::printer_technology(*m_config);
     // Only offer the host type selection for FFF, for SLA it's always the SL1 printer (at the moment)
     bool supports_multiple_printers = false;
+    bool supports_apikey_find = false;
+    bool supports_printhost_browse = true;
     if (tech == ptFFF) {
         update_host_type(printer_change);
         const auto opt = m_config->option<ConfigOptionEnum<PrintHostType>>("host_type");
@@ -421,13 +452,13 @@ void PhysicalPrinterDialog::update(bool printer_change)
             AuthorizationType auth_type = m_config->option<ConfigOptionEnum<AuthorizationType>>("printhost_authorization_type")->value;
             m_optgroup->show_field("printhost_apikey", auth_type == AuthorizationType::atKeyPassword);
             for (const char* opt_key : { "printhost_user", "printhost_password" })
-                m_optgroup->show_field(opt_key, auth_type == AuthorizationType::atUserPassword); 
+                m_optgroup->show_field(opt_key, auth_type == AuthorizationType::atUserPassword);
         } else {
             m_optgroup->hide_field("printhost_authorization_type");
             m_optgroup->show_field("printhost_apikey", true);
             for (const std::string& opt_key : std::vector<std::string>{ "printhost_user", "printhost_password" })
                 m_optgroup->hide_field(opt_key);
-            supports_multiple_printers = opt && (opt->value == htRepetier || opt -> value == htObico);
+            supports_multiple_printers = opt && (opt->value == htRepetier || opt->value == htObico);
             if (opt->value == htPrusaConnect) { // automatically show default prusaconnect address
                 if (Field* printhost_field = m_optgroup->get_field("print_host"); printhost_field) {
                     if (wxTextCtrl* temp = dynamic_cast<wxTextCtrl*>(printhost_field->getWindow()); temp && temp->GetValue().IsEmpty()) {
@@ -436,6 +467,8 @@ void PhysicalPrinterDialog::update(bool printer_change)
                 }
             }
         }
+        supports_apikey_find = opt && opt->value == htObico;
+        supports_printhost_browse = opt && opt->value != htObico;
     }
     else {
         m_optgroup->set_value("host_type", int(PrintHostType::htOctoPrint), false);
@@ -452,6 +485,8 @@ void PhysicalPrinterDialog::update(bool printer_change)
 
     m_optgroup->show_field("printhost_port", supports_multiple_printers);
     m_printhost_port_browse_btn->Show(supports_multiple_printers);
+    // m_printhost_browse_btn->Show(supports_printhost_browse);
+    m_printhost_apikey_find_btn->Show(supports_apikey_find);
 
     update_preset_input();
 
@@ -517,6 +552,7 @@ void PhysicalPrinterDialog::on_dpi_changed(const wxRect& suggested_rect)
 
     m_printhost_browse_btn->msw_rescale();
     m_printhost_test_btn->msw_rescale();
+    m_printhost_apikey_find_btn->msw_rescale();
     if (m_printhost_cafile_browse_btn)
         m_printhost_cafile_browse_btn->msw_rescale();
 
