@@ -178,9 +178,9 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
     };
 
     auto printhost_apikey_find = [=](wxWindow* parent) {
-        auto sizer = create_sizer_with_btn(parent, &m_printhost_apikey_find_btn, "printer_host_browser", _L("Find API Key"));
+        auto sizer = create_sizer_with_btn(parent, &m_printhost_apikey_get_btn, "printer_host_browser", _L("Get API Key"));
 
-        m_printhost_apikey_find_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
+        m_printhost_apikey_get_btn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
             std::unique_ptr<PrintHost> host(PrintHost::get_print_host(m_config));
             if (!host) {
                 const wxString text = _L("Could not get a valid Printer Host reference");
@@ -345,7 +345,7 @@ void PhysicalPrinterDialog::update_printhost_buttons()
     if (host) {
         m_printhost_test_btn->Enable(!m_config->opt_string("print_host").empty() && host->can_test());
         m_printhost_browse_btn->Enable(host->has_auto_discovery());
-        m_printhost_apikey_find_btn->Enable(!m_config->opt_string("print_host").empty());
+        m_printhost_apikey_get_btn->Enable(!m_config->opt_string("print_host").empty());
     }
 }
 
@@ -486,7 +486,7 @@ void PhysicalPrinterDialog::update(bool printer_change)
     m_optgroup->show_field("printhost_port", supports_multiple_printers);
     m_printhost_port_browse_btn->Show(supports_multiple_printers);
     // m_printhost_browse_btn->Show(supports_printhost_browse);
-    m_printhost_apikey_find_btn->Show(supports_apikey_find);
+    m_printhost_apikey_get_btn->Show(supports_apikey_find);
 
     update_preset_input();
 
@@ -552,7 +552,7 @@ void PhysicalPrinterDialog::on_dpi_changed(const wxRect& suggested_rect)
 
     m_printhost_browse_btn->msw_rescale();
     m_printhost_test_btn->msw_rescale();
-    m_printhost_apikey_find_btn->msw_rescale();
+    m_printhost_apikey_get_btn->msw_rescale();
     if (m_printhost_cafile_browse_btn)
         m_printhost_cafile_browse_btn->msw_rescale();
 
