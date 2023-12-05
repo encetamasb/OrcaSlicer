@@ -1176,4 +1176,36 @@ wxString PrusaConnect::get_test_failed_msg(wxString& msg) const
 {
     return GUI::format_wxstr("%s: %s", _L("Could not connect to Prusa Connect"), msg);
 }
+
+Obico::Obico(DynamicPrintConfig* config) :
+    OctoPrint(config),
+    m_printhost_apikey(config->opt_string("printhost_apikey"))
+{
+}
+
+PrintHostPostUploadActions Obico::get_post_upload_actions() const {
+    if (m_printhost_apikey.empty()) {
+        return {};
+    }
+    return PrintHostPostUploadAction::StartPrint;
+}
+
+bool Obico::validate_version_text(const boost::optional<std::string> &version_text) const
+{
+    return version_text ? boost::starts_with(*version_text, "Obico") : true;
+}
+
+wxString Obico::get_test_ok_msg () const
+{
+    return _(L("Connection to Obico works correctly."));
+}
+
+wxString Obico::get_test_failed_msg (wxString &msg) const
+{
+    return GUI::format_wxstr("%s: %s"
+        , _L("Could not connect to Obico")
+        , msg
+    );
+}
+
 }
