@@ -290,7 +290,7 @@ wxString OctoPrint::get_test_failed_msg (wxString &msg) const
 {
     return GUI::format_wxstr("%s: %s\n\n%s"
         , _L("Could not connect to OctoPrint")
-        , msg
+        , ">"
         , _L("Note: OctoPrint version at least 1.1.0 is required."));
 }
 
@@ -1204,7 +1204,7 @@ wxString Obico::get_test_failed_msg (wxString &msg) const
 {
     return GUI::format_wxstr("%s: %s"
         , _L("Could not connect to Obico")
-        , msg
+        , ""
     );
 }
 
