@@ -187,7 +187,7 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
                 show_error(this, text);
                 return;
             }
-            wxLaunchDefaultBrowser(host->get_host() + "/user_preferences/api-keys/", wxBROWSER_NEW_WINDOW); // FIXME
+            wxLaunchDefaultBrowser(host->get_host() + "/user_preferences/api_key/", wxBROWSER_NEW_WINDOW); // FIXME
         });
         return sizer;
     };
