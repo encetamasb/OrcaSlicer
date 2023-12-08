@@ -187,18 +187,7 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
                 show_error(this, text);
                 return;
             }
-            wxString msg;
-            bool result;
-            {
-                // Show a wait cursor during the connection test, as it is blocking UI.
-                wxBusyCursor wait;
-                result = host->test(msg);
-            }
-            if (result) {
-                wxLaunchDefaultBrowser(host->get_host() + "/user_preferences/api-keys/", wxBROWSER_NEW_WINDOW); // FIXME
-            } else {
-                show_error(this, host->get_test_failed_msg(msg));
-            };
+            wxLaunchDefaultBrowser(host->get_host() + "/user_preferences/api-keys/", wxBROWSER_NEW_WINDOW); // FIXME
         });
         return sizer;
     };
