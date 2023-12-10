@@ -187,7 +187,8 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
                 show_error(this, text);
                 return;
             }
-            wxLaunchDefaultBrowser(host->get_host() + "/user_preferences/api_key/", wxBROWSER_NEW_WINDOW); // FIXME
+            const auto url = host->get_host() + "/user_preferences/api_key/";
+            wxLaunchDefaultBrowser(url, wxBROWSER_NEW_WINDOW); // FIXME
         });
         return sizer;
     };
@@ -564,6 +565,8 @@ void PhysicalPrinterDialog::OnOK(wxEvent& event)
 {
     wxGetApp().get_tab(Preset::TYPE_PRINTER)->save_preset("", false, false, true, m_preset_name );
     event.Skip();
+    auto p_mainframe = wxGetApp().mainframe;
+    p_mainframe -> load_printer_url();
 }
 
 }}    // namespace Slic3r::GUI
