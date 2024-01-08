@@ -561,6 +561,10 @@ void PhysicalPrinterDialog::OnOK(wxEvent& event)
 {
     wxGetApp().get_tab(Preset::TYPE_PRINTER)->save_preset("", false, false, true, m_preset_name );
     event.Skip();
+
+    // reload tab
+    auto p_mainframe = wxGetApp().mainframe;
+    p_mainframe -> load_printer_url();
 }
 
 }}    // namespace Slic3r::GUI
